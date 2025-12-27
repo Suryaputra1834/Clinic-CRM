@@ -1,0 +1,284 @@
+// Get patient ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const patientId = urlParams.get('patientId');
+
+let currentPatient = null;
+let medicineCounter = 0;
+
+// Check if patient ID exists
+if (!patientId) {
+    alert('No patient ID provided!');
+    window.location.href = 'patients.html';
+}
+
+// Wait for authentication
+auth.onAuthStateChanged(async (user) => {
+    if (user && user.emailVerified) {
+        await loadPatientInfo(user.uid, patientId);
+        initializeForm();
+    }
+});
+
+// Load patient information
+async function loadPatientInfo(doctorId, patientId) {
+    const patientQuickInfo = document.getElementById('patientQuickInfo');
+    const backBtn = document.getElementById('backBtn');
+
+    try {
+        const patientDoc = await db.collection('patients').doc(patientId).get();
+
+        if (!patientDoc.exists) {
+            patientQuickInfo.innerHTML = '<div class="error-message">Patient not found!</div>';
+            return;
+        }
+
+        const patient = patientDoc.data();
+
+        // Check if patient belongs to this doctor
+        if (patient.doctorId !== doctorId) {
+            patientQuickInfo.innerHTML = '<div class="error-message">Access denied.</div>';
+            return;
+        }
+
+        // Store patient data
+        currentPatient = { id: patientId, ...patient };
+
+        // Update back button
+        backBtn.href = `patient-detail.html?id=${patientId}`;
+
+        // Display patient quick info
+        const avatar = patient.name.charAt(0).toUpperCase();
+        patientQuickInfo.innerHTML = `
+            <div class="quick-info-content">
+                <div class="patient-avatar-medium">${avatar}</div>
+                <div class="quick-info-details">
+                    <h3>${patient.name}</h3>
+                    <p>${patient.age} years • ${patient.gender} • ${patient.contact}</p>
+                    ${patient.medicalHistory ? `<p class="medical-alert">⚠️ ${patient.medicalHistory}</p>` : ''}
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error loading patient:', error);
+        patientQuickInfo.innerHTML = '<div class="error-message">Error loading patient information.</div>';
+    }
+}
+
+// Initialize form
+function initializeForm() {
+    // Set today's date and current time as default
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const timeStr = today.toTimeString().slice(0, 5);
+
+    document.getElementById('visitDate').value = dateStr;
+    document.getElementById('visitTime').value = timeStr;
+
+    // Add first medicine row
+    addMedicineRow();
+
+    // ===== ADD THIS NEW CODE =====
+    // Follow-up checkbox toggle
+    const needsFollowUpCheckbox = document.getElementById('needsFollowUp');
+    const followUpFields = document.getElementById('followUpFields');
+
+    needsFollowUpCheckbox?.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            followUpFields.style.display = 'block';
+            // Set default follow-up date to 7 days from today
+            const followUpDate = new Date();
+            followUpDate.setDate(followUpDate.getDate() + 7);
+            const followUpDateStr = followUpDate.toISOString().split('T')[0];
+            document.getElementById('followUpDate').value = followUpDateStr;
+        } else {
+            followUpFields.style.display = 'none';
+        }
+    });
+    // ===== END NEW CODE =====
+
+}
+
+// Add medicine row
+function addMedicineRow() {
+    medicineCounter++;
+    const medicinesContainer = document.getElementById('medicinesContainer');
+
+    const medicineRow = document.createElement('div');
+    medicineRow.className = 'medicine-row';
+    medicineRow.id = `medicine-${medicineCounter}`;
+
+    medicineRow.innerHTML = `
+        <div class="medicine-row-number">${medicineCounter}</div>
+        <div class="medicine-fields">
+            <div class="medicine-field">
+                <label>Medicine Name *</label>
+                <input type="text" class="medicine-name" required placeholder="e.g., Paracetamol">
+            </div>
+            <div class="medicine-field">
+                <label>Dosage</label>
+                <input type="text" class="medicine-dosage" placeholder="e.g., 500mg, 2 times daily">
+            </div>
+            <div class="medicine-field">
+                <label>Duration</label>
+                <input type="text" class="medicine-duration" placeholder="e.g., 5 days, 1 week">
+            </div>
+        </div>
+        <button type="button" class="btn-remove-medicine" onclick="removeMedicineRow(${medicineCounter})">×</button>
+    `;
+
+    medicinesContainer.appendChild(medicineRow);
+}
+
+// Remove medicine row
+function removeMedicineRow(id) {
+    const row = document.getElementById(`medicine-${id}`);
+    if (row) {
+        row.remove();
+        // Renumber remaining rows
+        updateMedicineNumbers();
+    }
+}
+
+// Update medicine row numbers
+function updateMedicineNumbers() {
+    const rows = document.querySelectorAll('.medicine-row');
+    rows.forEach((row, index) => {
+        const numberElement = row.querySelector('.medicine-row-number');
+        if (numberElement) {
+            numberElement.textContent = index + 1;
+        }
+    });
+}
+
+// Add medicine button event
+document.getElementById('addMedicineBtn')?.addEventListener('click', addMedicineRow);
+
+// Cancel button
+document.getElementById('cancelBtn')?.addEventListener('click', () => {
+    if (confirm('Are you sure you want to cancel? All entered data will be lost.')) {
+        window.location.href = `patient-detail.html?id=${patientId}`;
+    }
+});
+
+// Handle form submission
+document.getElementById('addVisitForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const submitBtnText = document.getElementById('submitBtnText');
+    const submitLoader = document.getElementById('submitLoader');
+    const errorMsg = document.getElementById('formError');
+    const successMsg = document.getElementById('formSuccess');
+
+    // Clear messages
+    errorMsg.textContent = '';
+    successMsg.textContent = '';
+
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtnText.style.display = 'none';
+    submitLoader.style.display = 'inline';
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('You must be logged in');
+        }
+
+        // Get form values
+        const visitDateStr = document.getElementById('visitDate').value;
+        const visitTimeStr = document.getElementById('visitTime').value;
+        const symptoms = document.getElementById('symptoms').value.trim();
+        const diagnosis = document.getElementById('diagnosis').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+
+        // Combine date and time
+        const visitDateTime = new Date(`${visitDateStr}T${visitTimeStr}`);
+
+        // Get medicines
+        const medicines = [];
+        const medicineRows = document.querySelectorAll('.medicine-row');
+
+        medicineRows.forEach(row => {
+            const name = row.querySelector('.medicine-name').value.trim();
+            const dosage = row.querySelector('.medicine-dosage').value.trim();
+            const duration = row.querySelector('.medicine-duration').value.trim();
+
+            if (name) {
+                medicines.push({
+                    name: name,
+                    dosage: dosage || '',
+                    duration: duration || ''
+                });
+            }
+        });
+
+        // Get follow-up information
+        const needsFollowUp = document.getElementById('needsFollowUp').checked;
+        let followUpDate = null;
+        let followUpReason = '';
+
+        if (needsFollowUp) {
+            const followUpDateStr = document.getElementById('followUpDate').value;
+            followUpReason = document.getElementById('followUpReason').value.trim();
+
+            if (followUpDateStr) {
+                followUpDate = firebase.firestore.Timestamp.fromDate(new Date(followUpDateStr));
+            }
+        }
+
+        // Create visit data
+        const visitData = {
+            doctorId: user.uid,
+            patientId: patientId,
+            patientName: currentPatient.name,
+            visitDate: firebase.firestore.Timestamp.fromDate(visitDateTime),
+            symptoms: symptoms,
+            diagnosis: diagnosis,
+            medicines: medicines,
+            notes: notes,
+            needsFollowUp: needsFollowUp,
+            followUpDate: followUpDate,
+            followUpReason: followUpReason,
+            followUpCompleted: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Save to Firestore
+        console.log('Saving visit data:', visitData);
+        const docRef = await db.collection('visits').add(visitData);
+        console.log('Visit saved with ID:', docRef.id);
+
+        // Show success message
+        successMsg.textContent = '✅ Visit recorded successfully!';
+
+        // Redirect after 1.5 seconds
+        setTimeout(() => {
+            window.location.href = `patient-detail.html?id=${patientId}`;
+        }, 1500);
+
+    } catch (error) {
+        console.error('Error saving visit:', error);
+        errorMsg.textContent = 'Error: ' + error.message;
+
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtnText.style.display = 'inline';
+        submitLoader.style.display = 'none';
+    }
+});
+
+// Logout functionality
+document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    if (confirm('Are you sure you want to logout?')) {
+        try {
+            await auth.signOut();
+            window.location.href = 'index.html';
+        } catch (error) {
+            alert('Error logging out: ' + error.message);
+        }
+    }
+});

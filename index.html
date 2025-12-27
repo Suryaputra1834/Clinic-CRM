@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic CRM - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h1>🏥 Clinic CRM</h1>
+            <p class="subtitle">Digital Patient Register for Personal Clinics</p>
+            
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required placeholder="doctor@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter password">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p id="errorMsg" class="error-msg"></p>
+            </form>
+            
+            <!-- Register Toggle -->
+            <p class="toggle-text">
+                Don't have an account? 
+                <a href="#" id="showRegister">Register here</a>
+            </p>
+        </div>
+        
+        <!-- Registration Form (Hidden by default) -->
+        <div class="login-box" id="registerBox" style="display: none;">
+            <h1>📝 Register</h1>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>Doctor Name</label>
+                    <input type="text" id="regName" required placeholder="Dr. Sharma">
+                </div>
+                
+                <div class="form-group">
+                    <label>Clinic Name</label>
+                    <input type="text" id="regClinic" required placeholder="Sharma Clinic">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" required placeholder="doctor@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" required placeholder="Minimum 6 characters">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Register</button>
+                <p id="regErrorMsg" class="error-msg"></p>
+            </form>
+            
+            <p class="toggle-text">
+                Already have an account? 
+                <a href="#" id="showLogin">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Our Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Clinic CRM</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🏥 Clinic CRM</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="patients.html" class="nav-link">Patients</a>
+                <a href="#" id="logoutBtn" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome, <span id="doctorName">Doctor</span>! 👋</h1>
+            <p id="clinicName" class="clinic-subtitle"></p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                    <h3 id="totalPatients">0</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-info">
+                    <h3 id="visitsToday">0</h3>
+                    <p>Visits Today</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <h3 id="visitsThisWeek">0</h3>
+                    <p>Visits This Week</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="add-patient.html" class="action-btn">
+                    <span class="action-icon">➕</span>
+                    <span>Add New Patient</span>
+                </a>
+                <a href="patients.html" class="action-btn">
+                    <span class="action-icon">👥</span>
+                    <span>View All Patients</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Follow-Up Reminders Section -->
+        <div class="follow-up-reminders-section">
+            <div class="section-header">
+                <h2>⏰ Follow-Up Reminders</h2>
+            </div>
+            <div id="followUpReminders" class="follow-up-list">
+                <div class="loading-spinner">Loading follow-ups...</div>
+            </div>
+        </div>
+
+        <!-- Recent Patients (Optional) -->
+        <div class="recent-section">
+            <h2>Recent Patients</h2>
+            <div id="recentPatientsList" class="patient-cards">
+                <p class="no-data">No recent patients</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Our Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>

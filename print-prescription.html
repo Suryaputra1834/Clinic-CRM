@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Prescription</title>
+    <style>
+        /* Print-specific styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .prescription-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        /* Header */
+        .prescription-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #0066cc;
+            margin-bottom: 30px;
+        }
+
+        .clinic-name {
+            font-size: 32px;
+            color: #0066cc;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .doctor-name {
+            font-size: 20px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .clinic-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* Patient Info */
+        .patient-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fc;
+            border-radius: 8px;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #333;
+            min-width: 100px;
+        }
+
+        .info-value {
+            color: #666;
+        }
+
+        /* Visit Details */
+        .section-title {
+            font-size: 18px;
+            color: #0066cc;
+            font-weight: 700;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8eaf6;
+        }
+
+        .detail-box {
+            padding: 15px;
+            background: #f8f9fc;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        /* Medicines */
+        .medicines-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .medicines-table th {
+            background: #0066cc;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .medicines-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e8eaf6;
+            color: #333;
+        }
+
+        .medicines-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .medicines-table tbody tr:nth-child(even) {
+            background: #f8f9fc;
+        }
+
+        /* Footer */
+        .prescription-footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e8eaf6;
+            text-align: right;
+        }
+
+        .signature-line {
+            margin-top: 40px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+            display: inline-block;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .signature-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Buttons */
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-print {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #004c99;
+        }
+
+        .btn-close {
+            background: #e8eaf6;
+            color: #333;
+        }
+
+        .btn-close:hover {
+            background: #d0d4e4;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .prescription-container {
+                box-shadow: none;
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .action-buttons {
+                display: none;
+            }
+
+            .prescription-header {
+                border-bottom: 3px solid #000;
+            }
+
+            .section-title {
+                border-bottom: 2px solid #000;
+            }
+
+            .medicines-table th {
+                background: #333 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #f44336;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="prescriptionContent">
+        <div class="loading">Loading prescription...</div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Our Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/print-prescription.js"></script>
+</body>
+</html>
