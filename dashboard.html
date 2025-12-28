@@ -83,6 +83,65 @@
             </div>
         </div>
 
+        <!-- NEW: Monthly Statistics -->
+        <div class="monthly-stats-section">
+            <h2>📈 Monthly Overview</h2>
+            <div class="monthly-stats-grid">
+                <div class="monthly-stat-card">
+                    <div class="monthly-stat-icon">📅</div>
+                    <div class="monthly-stat-info">
+                        <h3 id="visitsThisMonth">0</h3>
+                        <p>Visits This Month</p>
+                        <span id="monthlyTrend" class="trend-indicator"></span>
+                    </div>
+                </div>
+                <div class="monthly-stat-card">
+                    <div class="monthly-stat-icon">📊</div>
+                    <div class="monthly-stat-info">
+                        <h3 id="avgVisitsPerDay">0</h3>
+                        <p>Avg Visits/Day</p>
+                        <span class="stat-subtitle">This month</span>
+                    </div>
+                </div>
+                <div class="monthly-stat-card">
+                    <div class="monthly-stat-icon">⭐</div>
+                    <div class="monthly-stat-info">
+                        <h3 id="busiestDay">-</h3>
+                        <p>Busiest Day</p>
+                        <span id="busiestDayCount" class="stat-subtitle"></span>
+                    </div>
+                </div>
+                <div class="monthly-stat-card">
+                    <div class="monthly-stat-icon">👥</div>
+                    <div class="monthly-stat-info">
+                        <h3 id="newPatientsMonth">0</h3>
+                        <p>New Patients</p>
+                        <span class="stat-subtitle">This month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Top Diagnoses -->
+        <div class="insights-section">
+            <h2>🔍 Clinical Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <h3>📋 Most Common Diagnoses</h3>
+                    <div id="topDiagnoses" class="diagnoses-list">
+                        <p class="loading-text">Analyzing data...</p>
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <h3>👥 Patient Demographics</h3>
+                    <div id="patientDemographics" class="demographics-chart">
+                        <p class="loading-text">Loading demographics...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Recent Patients (Optional) -->
         <div class="recent-section">
             <h2>Recent Patients</h2>

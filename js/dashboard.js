@@ -11,6 +11,11 @@ auth.onAuthStateChanged(async (user) => {
         
         // Load recent patients
         loadRecentPatients(user.uid);
+
+        // NEW: Load enhanced statistics
+        loadMonthlyStats(user.uid);
+        loadTopDiagnoses(user.uid);
+        loadPatientDemographics(user.uid);
     }
 });
 
@@ -254,6 +259,270 @@ async function markFollowUpComplete(event, visitId) {
         console.error('Error marking follow-up complete:', error);
         alert('Error: ' + error.message);
     }
+}
+
+// Load monthly statistics
+async function loadMonthlyStats(doctorId) {
+    try {
+        // Get current month dates
+        const now = new Date();
+        const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDayThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        lastDayThisMonth.setHours(23, 59, 59, 999);
+        
+        // Get last month dates
+        const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        lastDayLastMonth.setHours(23, 59, 59, 999);
+        
+        // Get this month's visits
+        const thisMonthVisits = await db.collection('visits')
+            .where('doctorId', '==', doctorId)
+            .where('visitDate', '>=', firebase.firestore.Timestamp.fromDate(firstDayThisMonth))
+            .where('visitDate', '<=', firebase.firestore.Timestamp.fromDate(lastDayThisMonth))
+            .get();
+        
+        // Get last month's visits
+        const lastMonthVisits = await db.collection('visits')
+            .where('doctorId', '==', doctorId)
+            .where('visitDate', '>=', firebase.firestore.Timestamp.fromDate(firstDayLastMonth))
+            .where('visitDate', '<=', firebase.firestore.Timestamp.fromDate(lastDayLastMonth))
+            .get();
+        
+        // Calculate statistics
+        const thisMonthCount = thisMonthVisits.size;
+        const lastMonthCount = lastMonthVisits.size;
+        
+        document.getElementById('visitsThisMonth').textContent = thisMonthCount;
+        
+        // Calculate trend
+        const monthlyTrendEl = document.getElementById('monthlyTrend');
+        if (lastMonthCount > 0) {
+            const percentChange = ((thisMonthCount - lastMonthCount) / lastMonthCount * 100).toFixed(1);
+            if (percentChange > 0) {
+                monthlyTrendEl.innerHTML = `📈 +${percentChange}% vs last month`;
+                monthlyTrendEl.className = 'trend-indicator trend-up';
+            } else if (percentChange < 0) {
+                monthlyTrendEl.innerHTML = `📉 ${percentChange}% vs last month`;
+                monthlyTrendEl.className = 'trend-indicator trend-down';
+            } else {
+                monthlyTrendEl.innerHTML = `➡️ Same as last month`;
+                monthlyTrendEl.className = 'trend-indicator trend-neutral';
+            }
+        } else {
+            monthlyTrendEl.innerHTML = `First month of data`;
+            monthlyTrendEl.className = 'trend-indicator trend-neutral';
+        }
+        
+        // Average visits per day
+        const daysInMonth = now.getDate(); // Current day of month
+        const avgPerDay = daysInMonth > 0 ? (thisMonthCount / daysInMonth).toFixed(1) : 0;
+        document.getElementById('avgVisitsPerDay').textContent = avgPerDay;
+        
+        // Find busiest day of week
+        const dayCount = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        
+        thisMonthVisits.forEach(doc => {
+            const visit = doc.data();
+            const visitDate = visit.visitDate.toDate();
+            const dayOfWeek = visitDate.getDay();
+            dayCount[dayOfWeek]++;
+        });
+        
+        let maxDay = 0;
+        let maxCount = 0;
+        for (let day in dayCount) {
+            if (dayCount[day] > maxCount) {
+                maxCount = dayCount[day];
+                maxDay = day;
+            }
+        }
+        
+        if (maxCount > 0) {
+            document.getElementById('busiestDay').textContent = dayNames[maxDay];
+            document.getElementById('busiestDayCount').textContent = `${maxCount} visits`;
+        } else {
+            document.getElementById('busiestDay').textContent = '-';
+            document.getElementById('busiestDayCount').textContent = 'No data yet';
+        }
+        
+        // New patients this month
+        const newPatients = await db.collection('patients')
+            .where('doctorId', '==', doctorId)
+            .where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(firstDayThisMonth))
+            .get();
+        
+        document.getElementById('newPatientsMonth').textContent = newPatients.size;
+        
+    } catch (error) {
+        console.error('Error loading monthly stats:', error);
+    }
+}
+
+// Load top diagnoses
+async function loadTopDiagnoses(doctorId) {
+    try {
+        // Get all visits from last 3 months
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        
+        const visits = await db.collection('visits')
+            .where('doctorId', '==', doctorId)
+            .where('visitDate', '>=', firebase.firestore.Timestamp.fromDate(threeMonthsAgo))
+            .get();
+        
+        // Count diagnoses
+        const diagnosisCount = {};
+        visits.forEach(doc => {
+            const visit = doc.data();
+            if (visit.diagnosis) {
+                const diagnosis = visit.diagnosis.toLowerCase().trim();
+                diagnosisCount[diagnosis] = (diagnosisCount[diagnosis] || 0) + 1;
+            }
+        });
+        
+        // Sort and get top 5
+        const sortedDiagnoses = Object.entries(diagnosisCount)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+        
+        const topDiagnosesEl = document.getElementById('topDiagnoses');
+        
+        if (sortedDiagnoses.length === 0) {
+            topDiagnosesEl.innerHTML = '<p class="no-data">No diagnosis data yet</p>';
+            return;
+        }
+        
+        let html = '<ul class="diagnosis-list">';
+        sortedDiagnoses.forEach(([diagnosis, count], index) => {
+            const percentage = ((count / visits.size) * 100).toFixed(1);
+            html += `
+                <li class="diagnosis-item">
+                    <div class="diagnosis-rank">${index + 1}</div>
+                    <div class="diagnosis-details">
+                        <span class="diagnosis-name">${capitalize(diagnosis)}</span>
+                        <div class="diagnosis-bar">
+                            <div class="diagnosis-bar-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="diagnosis-count">${count} cases (${percentage}%)</span>
+                    </div>
+                </li>
+            `;
+        });
+        html += '</ul>';
+        
+        topDiagnosesEl.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading diagnoses:', error);
+        document.getElementById('topDiagnoses').innerHTML = '<p class="error-text">Error loading data</p>';
+    }
+}
+
+// Load patient demographics
+async function loadPatientDemographics(doctorId) {
+    try {
+        const patients = await db.collection('patients')
+            .where('doctorId', '==', doctorId)
+            .get();
+        
+        if (patients.empty) {
+            document.getElementById('patientDemographics').innerHTML = '<p class="no-data">No patient data yet</p>';
+            return;
+        }
+        
+        // Count by gender
+        const genderCount = { Male: 0, Female: 0, Other: 0 };
+        
+        // Count by age group
+        const ageGroups = {
+            '0-18': 0,
+            '19-35': 0,
+            '36-50': 0,
+            '51-65': 0,
+            '65+': 0
+        };
+        
+        patients.forEach(doc => {
+            const patient = doc.data();
+            
+            // Gender
+            if (patient.gender) {
+                genderCount[patient.gender] = (genderCount[patient.gender] || 0) + 1;
+            }
+            
+            // Age groups
+            const age = patient.age;
+            if (age <= 18) ageGroups['0-18']++;
+            else if (age <= 35) ageGroups['19-35']++;
+            else if (age <= 50) ageGroups['36-50']++;
+            else if (age <= 65) ageGroups['51-65']++;
+            else ageGroups['65+']++;
+        });
+        
+        const total = patients.size;
+        
+        let html = `
+            <div class="demographics-section">
+                <h4>Gender Distribution</h4>
+                <div class="demo-bars">
+        `;
+        
+        for (let gender in genderCount) {
+            const count = genderCount[gender];
+            const percentage = ((count / total) * 100).toFixed(1);
+            if (count > 0) {
+                html += `
+                    <div class="demo-bar-item">
+                        <span class="demo-label">${gender}</span>
+                        <div class="demo-bar">
+                            <div class="demo-bar-fill ${gender.toLowerCase()}" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="demo-value">${count} (${percentage}%)</span>
+                    </div>
+                `;
+            }
+        }
+        
+        html += `
+                </div>
+            </div>
+            <div class="demographics-section">
+                <h4>Age Groups</h4>
+                <div class="demo-bars">
+        `;
+        
+        for (let group in ageGroups) {
+            const count = ageGroups[group];
+            const percentage = ((count / total) * 100).toFixed(1);
+            html += `
+                <div class="demo-bar-item">
+                    <span class="demo-label">${group} years</span>
+                    <div class="demo-bar">
+                        <div class="demo-bar-fill age-group" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="demo-value">${count} (${percentage}%)</span>
+                </div>
+            `;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('patientDemographics').innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading demographics:', error);
+        document.getElementById('patientDemographics').innerHTML = '<p class="error-text">Error loading data</p>';
+    }
+}
+
+// Helper function to capitalize text
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // Logout functionality - ROBUST VERSION
