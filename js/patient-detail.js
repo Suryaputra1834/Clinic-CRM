@@ -76,6 +76,7 @@ function displayPatientInfo(patient) {
             </div>
             <div class="patient-actions">
                 <button onclick="editPatient('${patient.id}')" class="btn-action btn-edit">✏️ Edit</button>
+                 <button onclick="exportPatientPDF()" class="btn-action btn-export">📄 Export PDF</button>
                 <button onclick="deletePatientFromDetail('${patient.id}', '${patient.name}')" class="btn-action btn-delete">🗑️ Delete</button>
             </div>
         </div>
