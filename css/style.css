@@ -2281,3 +2281,47 @@ body {
         padding: 25px 20px;
     }
 }
+
+
+/* ==================== EDIT VISIT BUTTON ==================== */
+
+.btn-edit-small {
+    background: var(--white);
+    border: 2px solid var(--success-green);
+    color: var(--success-green);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.btn-edit-small:hover {
+    background: var(--success-green);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Update visit actions to show 3 buttons */
+.visit-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .visit-actions {
+        width: 100%;
+    }
+    
+    .btn-edit-small,
+    .btn-print-small,
+    .btn-delete-small {
+        flex: 1;
+        min-width: 70px;
+    }
+}

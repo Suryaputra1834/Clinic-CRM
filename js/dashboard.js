@@ -44,29 +44,47 @@ async function loadStats(doctorId) {
         
         document.getElementById('totalPatients').textContent = patientsSnapshot.size;
         
+        // Get ALL visits for this doctor (we'll filter in JavaScript)
+        const allVisitsSnapshot = await db.collection('visits')
+            .where('doctorId', '==', doctorId)
+            .get();
+        
         // Get today's date at midnight
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const todayTime = today.getTime();
         
-        // Get visits today
-        const visitsToday = await db.collection('visits')
-            .where('doctorId', '==', doctorId)
-            .where('visitDate', '>=', today)
-            .get();
-        
-        document.getElementById('visitsToday').textContent = visitsToday.size;
-        
-        // Get this week's date (last 7 days)
+        // Get 7 days ago
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         weekAgo.setHours(0, 0, 0, 0);
+        const weekAgoTime = weekAgo.getTime();
         
-        const visitsThisWeek = await db.collection('visits')
-            .where('doctorId', '==', doctorId)
-            .where('visitDate', '>=', weekAgo)
-            .get();
+        // Count visits manually based on visitDate
+        let visitsTodayCount = 0;
+        let visitsThisWeekCount = 0;
         
-        document.getElementById('visitsThisWeek').textContent = visitsThisWeek.size;
+        allVisitsSnapshot.forEach(doc => {
+            const visit = doc.data();
+            if (visit.visitDate) {
+                const visitDate = visit.visitDate.toDate();
+                visitDate.setHours(0, 0, 0, 0);
+                const visitTime = visitDate.getTime();
+                
+                // Check if visit is today
+                if (visitTime === todayTime) {
+                    visitsTodayCount++;
+                }
+                
+                // Check if visit is within last 7 days
+                if (visitTime >= weekAgoTime) {
+                    visitsThisWeekCount++;
+                }
+            }
+        });
+        
+        document.getElementById('visitsToday').textContent = visitsTodayCount;
+        document.getElementById('visitsThisWeek').textContent = visitsThisWeekCount;
         
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -267,31 +285,51 @@ async function loadMonthlyStats(doctorId) {
         // Get current month dates
         const now = new Date();
         const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        firstDayThisMonth.setHours(0, 0, 0, 0);
+        
         const lastDayThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         lastDayThisMonth.setHours(23, 59, 59, 999);
         
         // Get last month dates
         const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        firstDayLastMonth.setHours(0, 0, 0, 0);
+        
         const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
         lastDayLastMonth.setHours(23, 59, 59, 999);
         
-        // Get this month's visits
-        const thisMonthVisits = await db.collection('visits')
+        // Get ALL visits for this doctor
+        const allVisitsSnapshot = await db.collection('visits')
             .where('doctorId', '==', doctorId)
-            .where('visitDate', '>=', firebase.firestore.Timestamp.fromDate(firstDayThisMonth))
-            .where('visitDate', '<=', firebase.firestore.Timestamp.fromDate(lastDayThisMonth))
             .get();
         
-        // Get last month's visits
-        const lastMonthVisits = await db.collection('visits')
-            .where('doctorId', '==', doctorId)
-            .where('visitDate', '>=', firebase.firestore.Timestamp.fromDate(firstDayLastMonth))
-            .where('visitDate', '<=', firebase.firestore.Timestamp.fromDate(lastDayLastMonth))
-            .get();
+        // Filter visits manually by visitDate
+        let thisMonthCount = 0;
+        let lastMonthCount = 0;
+        const thisMonthVisits = [];
         
-        // Calculate statistics
-        const thisMonthCount = thisMonthVisits.size;
-        const lastMonthCount = lastMonthVisits.size;
+        const thisMonthStart = firstDayThisMonth.getTime();
+        const thisMonthEnd = lastDayThisMonth.getTime();
+        const lastMonthStart = firstDayLastMonth.getTime();
+        const lastMonthEnd = lastDayLastMonth.getTime();
+        
+        allVisitsSnapshot.forEach(doc => {
+            const visit = doc.data();
+            if (visit.visitDate) {
+                const visitDate = visit.visitDate.toDate();
+                const visitTime = visitDate.getTime();
+                
+                // Check if visit is this month
+                if (visitTime >= thisMonthStart && visitTime <= thisMonthEnd) {
+                    thisMonthCount++;
+                    thisMonthVisits.push({ ...visit, visitDate: visitDate });
+                }
+                
+                // Check if visit is last month
+                if (visitTime >= lastMonthStart && visitTime <= lastMonthEnd) {
+                    lastMonthCount++;
+                }
+            }
+        });
         
         document.getElementById('visitsThisMonth').textContent = thisMonthCount;
         
@@ -314,19 +352,17 @@ async function loadMonthlyStats(doctorId) {
             monthlyTrendEl.className = 'trend-indicator trend-neutral';
         }
         
-        // Average visits per day
+        // Average visits per day (only count days that have passed)
         const daysInMonth = now.getDate(); // Current day of month
         const avgPerDay = daysInMonth > 0 ? (thisMonthCount / daysInMonth).toFixed(1) : 0;
         document.getElementById('avgVisitsPerDay').textContent = avgPerDay;
         
-        // Find busiest day of week
+        // Find busiest day of week (from this month's visits)
         const dayCount = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
-        thisMonthVisits.forEach(doc => {
-            const visit = doc.data();
-            const visitDate = visit.visitDate.toDate();
-            const dayOfWeek = visitDate.getDay();
+        thisMonthVisits.forEach(visit => {
+            const dayOfWeek = visit.visitDate.getDay();
             dayCount[dayOfWeek]++;
         });
         
@@ -347,7 +383,7 @@ async function loadMonthlyStats(doctorId) {
             document.getElementById('busiestDayCount').textContent = 'No data yet';
         }
         
-        // New patients this month
+        // New patients this month (still based on createdAt - this is correct)
         const newPatients = await db.collection('patients')
             .where('doctorId', '==', doctorId)
             .where('createdAt', '>=', firebase.firestore.Timestamp.fromDate(firstDayThisMonth))

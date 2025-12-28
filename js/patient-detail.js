@@ -21,29 +21,29 @@ auth.onAuthStateChanged(async (user) => {
 // Load patient details
 async function loadPatientDetails(doctorId, patientId) {
     const patientInfoCard = document.getElementById('patientInfoCard');
-    
+
     try {
         const patientDoc = await db.collection('patients').doc(patientId).get();
-        
+
         if (!patientDoc.exists) {
             patientInfoCard.innerHTML = '<div class="error-message">Patient not found!</div>';
             return;
         }
-        
+
         const patient = patientDoc.data();
-        
+
         // Check if patient belongs to this doctor
         if (patient.doctorId !== doctorId) {
             patientInfoCard.innerHTML = '<div class="error-message">You do not have permission to view this patient.</div>';
             return;
         }
-        
+
         // Store patient data globally
         currentPatient = { id: patientId, ...patient };
-        
+
         // Display patient information
         displayPatientInfo(currentPatient);
-        
+
     } catch (error) {
         console.error('Error loading patient:', error);
         patientInfoCard.innerHTML = '<div class="error-message">Error loading patient information.</div>';
@@ -53,7 +53,7 @@ async function loadPatientDetails(doctorId, patientId) {
 // Display patient information
 function displayPatientInfo(patient) {
     const patientInfoCard = document.getElementById('patientInfoCard');
-    
+
     const avatar = patient.name.charAt(0).toUpperCase();
     const age = patient.age || 'N/A';
     const gender = patient.gender || 'N/A';
@@ -62,7 +62,7 @@ function displayPatientInfo(patient) {
     const bloodGroup = patient.bloodGroup || 'Not specified';
     const emergencyContact = patient.emergencyContact || 'Not provided';
     const medicalHistory = patient.medicalHistory || 'No medical history recorded';
-    
+
     patientInfoCard.innerHTML = `
         <div class="patient-header">
             <div class="patient-avatar-xlarge">${avatar}</div>
@@ -119,14 +119,14 @@ function displayPatientInfo(patient) {
 // Load visit history
 async function loadVisitHistory(doctorId, patientId) {
     const visitHistoryContainer = document.getElementById('visitHistoryContainer');
-    
+
     try {
         const visitsSnapshot = await db.collection('visits')
             .where('doctorId', '==', doctorId)
             .where('patientId', '==', patientId)
             .orderBy('visitDate', 'desc')
             .get();
-        
+
         if (visitsSnapshot.empty) {
             visitHistoryContainer.innerHTML = `
                 <div class="no-visits">
@@ -138,15 +138,15 @@ async function loadVisitHistory(doctorId, patientId) {
             `;
             return;
         }
-        
+
         let html = '';
         visitsSnapshot.forEach(doc => {
             const visit = doc.data();
             html += createVisitCard(doc.id, visit);
         });
-        
+
         visitHistoryContainer.innerHTML = html;
-        
+
     } catch (error) {
         console.error('Error loading visits:', error);
         visitHistoryContainer.innerHTML = '<div class="error-message">Error loading visit history.</div>';
@@ -156,21 +156,21 @@ async function loadVisitHistory(doctorId, patientId) {
 // Create visit card HTML
 function createVisitCard(visitId, visit) {
     const visitDate = visit.visitDate?.toDate ? visit.visitDate.toDate() : new Date();
-    const formattedDate = visitDate.toLocaleDateString('en-IN', { 
-        day: 'numeric', 
-        month: 'short', 
-        year: 'numeric' 
+    const formattedDate = visitDate.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
     });
-    const formattedTime = visitDate.toLocaleTimeString('en-IN', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+    const formattedTime = visitDate.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
     });
-    
+
     const symptoms = visit.symptoms || 'Not recorded';
     const diagnosis = visit.diagnosis || 'Not recorded';
     const notes = visit.notes || '';
     const medicines = visit.medicines || [];
-    
+
     let medicinesHTML = '';
     if (medicines.length > 0) {
         medicinesHTML = '<div class="medicines-list"><h4>💊 Prescribed Medicines:</h4><ul>';
@@ -185,14 +185,15 @@ function createVisitCard(visitId, visit) {
         });
         medicinesHTML += '</ul></div>';
     }
-    
+
     return `
-       <div class="visit-card-header">
+      <div class="visit-card-header">
     <div class="visit-date-info">
         <h3>📅 ${formattedDate}</h3>
         <span class="visit-time">🕐 ${formattedTime}</span>
     </div>
     <div class="visit-actions">
+        <button onclick="editVisit('${visitId}')" class="btn-edit-small">✏️ Edit</button>
         <button onclick="printPrescription('${visitId}')" class="btn-print-small">🖨️ Print</button>
         <button onclick="deleteVisit('${visitId}', '${formattedDate}')" class="btn-delete-small">🗑️</button>
     </div>
@@ -244,40 +245,40 @@ async function deletePatientFromDetail(patientId, patientName) {
         `This will also delete all visit records!\n\n` +
         `This action CANNOT be undone!`
     );
-    
+
     if (!confirmDelete) return;
-    
+
     const doubleConfirm = confirm(`⚠️ FINAL CONFIRMATION\n\nPermanently delete "${patientName}"?`);
-    
+
     if (!doubleConfirm) return;
-    
+
     try {
         const user = auth.currentUser;
         if (!user) {
             throw new Error('You must be logged in');
         }
-        
+
         // Delete all visits
         const visitsSnapshot = await db.collection('visits')
             .where('patientId', '==', patientId)
             .where('doctorId', '==', user.uid)
             .get();
-        
+
         const deletePromises = [];
         visitsSnapshot.forEach(doc => {
             deletePromises.push(doc.ref.delete());
         });
-        
+
         if (deletePromises.length > 0) {
             await Promise.all(deletePromises);
         }
-        
+
         // Delete patient
         await db.collection('patients').doc(patientId).delete();
-        
+
         alert(`✅ Patient "${patientName}" deleted successfully!`);
         window.location.href = 'patients.html';
-        
+
     } catch (error) {
         console.error('Error deleting patient:', error);
         alert('❌ Error: ' + error.message);
@@ -287,20 +288,20 @@ async function deletePatientFromDetail(patientId, patientName) {
 // Delete single visit
 async function deleteVisit(visitId, visitDate) {
     const confirmDelete = confirm(`Delete visit from ${visitDate}?`);
-    
+
     if (!confirmDelete) return;
-    
+
     try {
         await db.collection('visits').doc(visitId).delete();
-        
+
         alert('✅ Visit deleted successfully!');
-        
+
         // Reload visit history
         const user = auth.currentUser;
         if (user && currentPatient) {
             await loadVisitHistory(user.uid, currentPatient.id);
         }
-        
+
     } catch (error) {
         console.error('Error deleting visit:', error);
         alert('❌ Error: ' + error.message);
@@ -312,37 +313,42 @@ async function printPrescription(visitId) {
     try {
         // Get visit data
         const visitDoc = await db.collection('visits').doc(visitId).get();
-        
+
         if (!visitDoc.exists) {
             alert('Visit not found!');
             return;
         }
-        
+
         const visit = visitDoc.data();
-        
+
         // Create prescription data object
         const prescriptionData = {
             visit: visit,
             patient: currentPatient,
             visitId: visitId
         };
-        
+
         // Store in sessionStorage to pass to print page
         sessionStorage.setItem('prescriptionData', JSON.stringify(prescriptionData));
-        
+
         // Open print page in new window
         window.open('print-prescription.html', '_blank');
-        
+
     } catch (error) {
         console.error('Error loading prescription:', error);
         alert('Error loading prescription: ' + error.message);
     }
 }
 
+// Edit visit
+function editVisit(visitId) {
+    window.location.href = `edit-visit.html?visitId=${visitId}&patientId=${currentPatient.id}`;
+}
+
 // Logout functionality
 document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     e.preventDefault();
-    
+
     if (confirm('Are you sure you want to logout?')) {
         try {
             await auth.signOut();

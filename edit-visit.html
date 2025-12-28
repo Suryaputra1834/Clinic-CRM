@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Visit - Clinic CRM</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🏥 Clinic CRM</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="patients.html" class="nav-link">Patients</a>
+                <a href="#" id="logoutBtn" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Back Button -->
+        <div class="back-navigation">
+            <a href="#" id="backBtn" class="back-link">← Back to Patient</a>
+        </div>
+
+        <!-- Patient Quick Info -->
+        <div id="patientQuickInfo" class="patient-quick-info">
+            <div class="loading-spinner">Loading patient information...</div>
+        </div>
+
+        <!-- Edit Visit Form -->
+        <div class="form-container">
+            <div class="form-header">
+                <h2>✏️ Edit Visit Record</h2>
+                <p>Update visit details, diagnosis, and prescribed medicines</p>
+            </div>
+
+            <form id="editVisitForm">
+                <!-- Visit Date & Time -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Visit Date *</label>
+                        <input type="date" id="visitDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Visit Time *</label>
+                        <input type="time" id="visitTime" required>
+                    </div>
+                </div>
+
+                <!-- Symptoms -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Symptoms / Chief Complaints *</label>
+                        <textarea id="symptoms" rows="3" required placeholder="e.g., Fever, headache, body pain for 2 days"></textarea>
+                    </div>
+                </div>
+
+                <!-- Diagnosis -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Diagnosis *</label>
+                        <textarea id="diagnosis" rows="3" required placeholder="e.g., Viral fever, Common cold"></textarea>
+                    </div>
+                </div>
+
+                <!-- Medicines Section -->
+                <div class="medicines-section">
+                    <div class="section-title">
+                        <h3>💊 Prescribed Medicines</h3>
+                        <button type="button" id="addMedicineBtn" class="btn-add-medicine">+ Add Medicine</button>
+                    </div>
+
+                    <div id="medicinesContainer">
+                        <!-- Medicine entries will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Follow-Up Date -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Follow-Up Required?</label>
+                        <select id="followUpRequired" onchange="toggleFollowUpDate()">
+                            <option value="no">No Follow-Up Needed</option>
+                            <option value="yes">Yes, Schedule Follow-Up</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="followUpDateGroup" style="display: none;">
+                        <label>Follow-Up Date</label>
+                        <input type="date" id="followUpDate">
+                        <small>Patient should return on this date</small>
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Additional Notes</label>
+                        <textarea id="notes" rows="3" placeholder="Any additional observations, follow-up instructions, etc."></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submitBtnText">Update Visit</span>
+                        <span id="submitLoader" style="display: none;">Updating...</span>
+                    </button>
+                </div>
+
+                <p id="formError" class="error-msg"></p>
+                <p id="formSuccess" class="success-msg"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Our Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/edit-visit.js"></script>
+</body>
+</html>
