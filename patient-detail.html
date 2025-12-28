@@ -33,6 +33,25 @@
             <div class="loading-spinner">Loading patient information...</div>
         </div>
 
+<!-- NEW: AI Patient Summary Section -->
+        <div class="ai-summary-section">
+            <div class="ai-summary-header">
+                <h2>🤖 AI Patient Summary</h2>
+                <button id="generateSummaryBtn" class="btn-generate-summary">
+                    <span id="generateBtnText">✨ Generate Smart Summary</span>
+                    <span id="generateBtnLoader" style="display: none;">🔄 Analyzing...</span>
+                </button>
+            </div>
+            
+            <div id="aiSummaryContent" class="ai-summary-content">
+                <div class="ai-summary-placeholder">
+                    <div class="ai-icon">🤖</div>
+                    <p>Click "Generate Smart Summary" to get an AI-powered overview of this patient's medical history, common patterns, and key health insights.</p>
+                    <small>Powered by Google Gemini AI</small>
+                </div>
+            </div>
+        </div>
+
         <!-- Visit History Section -->
         <div class="visit-history-section">
             <div class="section-header">
@@ -54,6 +73,7 @@
     <!-- Our Scripts -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/gemini-config.js"></script> <!-- NEW: Add this line -->
     <script src="js/patient-detail.js"></script>
 </body>
 </html>

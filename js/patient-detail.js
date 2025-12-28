@@ -345,6 +345,113 @@ function editVisit(visitId) {
     window.location.href = `edit-visit.html?visitId=${visitId}&patientId=${currentPatient.id}`;
 }
 
+
+// Generate AI Summary button handler
+document.getElementById('generateSummaryBtn')?.addEventListener('click', async () => {
+    if (!currentPatient) {
+        alert('Patient data not loaded yet!');
+        return;
+    }
+    
+    const generateBtn = document.getElementById('generateSummaryBtn');
+    const generateBtnText = document.getElementById('generateBtnText');
+    const generateBtnLoader = document.getElementById('generateBtnLoader');
+    const aiSummaryContent = document.getElementById('aiSummaryContent');
+    
+    try {
+        // Disable button and show loader
+        generateBtn.disabled = true;
+        generateBtnText.style.display = 'none';
+        generateBtnLoader.style.display = 'inline';
+        
+        // Show loading state
+        aiSummaryContent.innerHTML = `
+            <div class="ai-summary-loading">
+                <div class="loading-spinner-ai">🤖</div>
+                <p>AI is analyzing patient data...</p>
+                <small>This may take 5-10 seconds</small>
+            </div>
+        `;
+        
+        // Get all visits for this patient
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('You must be logged in');
+        }
+        
+        const visitsSnapshot = await db.collection('visits')
+            .where('doctorId', '==', user.uid)
+            .where('patientId', '==', currentPatient.id)
+            .orderBy('visitDate', 'desc')
+            .get();
+        
+        const visits = [];
+        visitsSnapshot.forEach(doc => {
+            visits.push(doc.data());
+        });
+        
+        if (visits.length === 0) {
+            aiSummaryContent.innerHTML = `
+                <div class="ai-summary-error">
+                    <div class="error-icon">ℹ️</div>
+                    <p>This patient has no visit history yet. Add at least one visit to generate an AI summary.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Generate AI summary
+        console.log('Generating AI summary...');
+        const result = await generatePatientSummary(currentPatient, visits);
+        
+        if (result.success) {
+            const formattedSummary = formatAISummary(result.summary);
+            const timestamp = result.timestamp.toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            aiSummaryContent.innerHTML = `
+                <div class="ai-summary-result">
+                    <div class="ai-summary-badge">
+                        <span class="ai-badge-icon">✨</span>
+                        <span>AI Generated Summary</span>
+                        <span class="ai-timestamp">${timestamp}</span>
+                    </div>
+                    <div class="ai-summary-text">
+                        ${formattedSummary}
+                    </div>
+                    <div class="ai-summary-footer">
+                        <small>⚠️ This summary is AI-generated and should be reviewed by the doctor. Not a substitute for professional medical judgment.</small>
+                    </div>
+                </div>
+            `;
+            
+            console.log('AI summary generated successfully');
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error generating AI summary:', error);
+        aiSummaryContent.innerHTML = `
+            <div class="ai-summary-error">
+                <div class="error-icon">❌</div>
+                <p><strong>Error:</strong> ${error.message}</p>
+                <small>Please check your API key and internet connection.</small>
+            </div>
+        `;
+    } finally {
+        // Re-enable button
+        generateBtn.disabled = false;
+        generateBtnText.style.display = 'inline';
+        generateBtnLoader.style.display = 'none';
+    }
+});
+
 // Logout functionality
 document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     e.preventDefault();
