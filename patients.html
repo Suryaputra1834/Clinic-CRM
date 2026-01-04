@@ -3,10 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
     <title>Patients - Clinic CRM</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+  <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner-large"></div>
+            <h2>Loading...</h2>
+            <p>Please wait while we load your data</p>
+        </div>
+    </div>
+
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -63,6 +77,20 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/dark-mode.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/toast.js"></script>
     <script src="js/patient-list.js"></script>
+
+<!-- Hide loading screen when page loads -->
+    <script>
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 500); // Wait 500ms then fade out
+            }
+        });
+    </script>
+
 </body>
 </html>

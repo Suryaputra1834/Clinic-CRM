@@ -4,7 +4,7 @@ const { jsPDF } = window.jspdf;
 // Export patient report to PDF
 async function exportPatientPDF() {
     if (!currentPatient) {
-        alert('Patient data not loaded!');
+        showError('Patient data not loaded!');
         return;
     }
 
@@ -263,11 +263,11 @@ async function exportPatientPDF() {
         }
 
         // Show success message
-        alert('✅ Patient report exported successfully!');
+        showSuccess('✅ Patient report exported successfully!');
 
     } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('❌ Error generating PDF: ' + error.message);
+        showError('❌ Error generating PDF: ' + error.message);
 
         // Restore button
         const exportBtn = document.querySelector('.btn-export');

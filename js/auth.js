@@ -48,7 +48,7 @@ registerForm?.addEventListener('submit', async (e) => {
         await auth.signOut();
 
         // Show success message
-        alert('Registration successful!\n\nA verification email has been sent to: ' + email + '\n\nPlease check your inbox (and spam folder) and click the verification link before logging in.');
+        showSuccess('Registration successful!\n\nA verification email has been sent to: ' + email + '\n\nPlease check your inbox (and spam folder) and click the verification link before logging in.');
 
         // Switch to login form
         document.getElementById('registerBox').style.display = 'none';
@@ -83,7 +83,7 @@ loginForm?.addEventListener('submit', async (e) => {
             const resend = confirm('Email not verified yet.\n\nWould you like us to resend the verification email?');
             if (resend) {
                 await user.sendEmailVerification();
-                alert('Verification email sent! Please check your inbox and spam folder.');
+                showSuccess('Verification email sent! Please check your inbox and spam folder.');
             }
 
             // Sign them out - CRITICAL!
@@ -108,7 +108,7 @@ loginForm?.addEventListener('submit', async (e) => {
 // Auth state observer - protect pages
 auth.onAuthStateChanged(async (user) => {
     const currentPage = window.location.pathname;
-    const isLoginPage = currentPage.endsWith('index.html') || currentPage.endsWith('/');
+    const isLoginPage = currentPage.endsWith('login.html') || currentPage.endsWith('/');
 
     if (user) {
         // User is logged in
@@ -123,9 +123,9 @@ auth.onAuthStateChanged(async (user) => {
 
         // If on dashboard but NOT verified, kick them out
         if (!isLoginPage && !user.emailVerified) {
-            alert('Please verify your email first!');
+            showError('Please verify your email first!');
             await auth.signOut();
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         }
 
     } else {
@@ -133,7 +133,7 @@ auth.onAuthStateChanged(async (user) => {
 
         // If on protected page, redirect to login
         if (!isLoginPage) {
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         }
     }
 });

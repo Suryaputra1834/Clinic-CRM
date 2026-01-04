@@ -275,7 +275,7 @@ async function markFollowUpComplete(event, visitId) {
         
     } catch (error) {
         console.error('Error marking follow-up complete:', error);
-        alert('Error: ' + error.message);
+        showError('Error: ' + error.message);
     }
 }
 
@@ -583,10 +583,10 @@ function setupLogout() {
                 console.log('Logging out...');
                 await auth.signOut();
                 console.log('Signed out successfully');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             } catch (error) {
                 console.error('Logout error:', error);
-                alert('Error logging out: ' + error.message);
+                showError('Error logging out: ' + error.message);
             }
         } else {
             console.log('Logout cancelled');

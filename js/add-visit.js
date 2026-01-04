@@ -7,7 +7,7 @@ let medicineCounter = 0;
 
 // Check if patient ID exists
 if (!patientId) {
-    alert('No patient ID provided!');
+    showError('No patient ID provided!');
     window.location.href = 'patients.html';
 }
 
@@ -276,9 +276,9 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     if (confirm('Are you sure you want to logout?')) {
         try {
             await auth.signOut();
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         } catch (error) {
-            alert('Error logging out: ' + error.message);
+          showError('Error logging out: ' + error.message);
         }
     }
 });

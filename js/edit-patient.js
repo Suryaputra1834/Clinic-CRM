@@ -6,7 +6,7 @@ let currentPatient = null;
 
 // Check if patient ID exists
 if (!patientId) {
-    alert('No patient ID provided!');
+    showError('No patient ID provided!');
     window.location.href = 'patients.html';
 }
 
@@ -23,7 +23,7 @@ async function loadPatientData(doctorId, patientId) {
         const patientDoc = await db.collection('patients').doc(patientId).get();
         
         if (!patientDoc.exists) {
-            alert('Patient not found!');
+            showError('Patient not found!');
             window.location.href = 'patients.html';
             return;
         }
@@ -32,7 +32,7 @@ async function loadPatientData(doctorId, patientId) {
         
         // Check if patient belongs to this doctor
         if (patient.doctorId !== doctorId) {
-            alert('You do not have permission to edit this patient.');
+            showError('You do not have permission to edit this patient.');
             window.location.href = 'patients.html';
             return;
         }
@@ -48,7 +48,7 @@ async function loadPatientData(doctorId, patientId) {
         
     } catch (error) {
         console.error('Error loading patient:', error);
-        alert('Error loading patient data: ' + error.message);
+        showError('Error loading patient data: ' + error.message);
     }
 }
 
@@ -149,9 +149,9 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     if (confirm('Are you sure you want to logout?')) {
         try {
             await auth.signOut();
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         } catch (error) {
-            alert('Error logging out: ' + error.message);
+            showError('Error logging out: ' + error.message);
         }
     }
 });

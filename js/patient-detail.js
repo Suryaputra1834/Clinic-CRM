@@ -6,7 +6,7 @@ let currentPatient = null;
 
 // Check if patient ID exists
 if (!patientId) {
-    alert('No patient ID provided!');
+    showError('No patient ID provided!');
     window.location.href = 'patients.html';
 }
 
@@ -277,12 +277,12 @@ async function deletePatientFromDetail(patientId, patientName) {
         // Delete patient
         await db.collection('patients').doc(patientId).delete();
 
-        alert(`✅ Patient "${patientName}" deleted successfully!`);
+        showSuccess(`✅ Patient "${patientName}" deleted successfully!`);
         window.location.href = 'patients.html';
 
     } catch (error) {
         console.error('Error deleting patient:', error);
-        alert('❌ Error: ' + error.message);
+        showError('❌ Error: ' + error.message);
     }
 }
 
@@ -295,7 +295,7 @@ async function deleteVisit(visitId, visitDate) {
     try {
         await db.collection('visits').doc(visitId).delete();
 
-        alert('✅ Visit deleted successfully!');
+        showSuccess('✅ Visit deleted successfully!');
 
         // Reload visit history
         const user = auth.currentUser;
@@ -305,7 +305,7 @@ async function deleteVisit(visitId, visitDate) {
 
     } catch (error) {
         console.error('Error deleting visit:', error);
-        alert('❌ Error: ' + error.message);
+        showError('❌ Error: ' + error.message);
     }
 }
 
@@ -316,7 +316,7 @@ async function printPrescription(visitId) {
         const visitDoc = await db.collection('visits').doc(visitId).get();
 
         if (!visitDoc.exists) {
-            alert('Visit not found!');
+            showError('Visit not found!');
             return;
         }
 
@@ -337,7 +337,7 @@ async function printPrescription(visitId) {
 
     } catch (error) {
         console.error('Error loading prescription:', error);
-        alert('Error loading prescription: ' + error.message);
+        showError('Error loading prescription: ' + error.message);
     }
 }
 
@@ -350,7 +350,7 @@ function editVisit(visitId) {
 // Generate AI Summary button handler
 document.getElementById('generateSummaryBtn')?.addEventListener('click', async () => {
     if (!currentPatient) {
-        alert('Patient data not loaded yet!');
+        showError('Patient data not loaded yet!');
         return;
     }
     
@@ -460,9 +460,9 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     if (confirm('Are you sure you want to logout?')) {
         try {
             await auth.signOut();
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         } catch (error) {
-            alert('Error logging out: ' + error.message);
+            showError('Error logging out: ' + error.message);
         }
     }
 });

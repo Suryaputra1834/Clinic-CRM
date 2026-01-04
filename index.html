@@ -3,82 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clinic CRM - Login</title>
-    <link rel="stylesheet" href="css/style.css">
+     <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+    <title>Clinic CRM - Digital Patient Management System</title>
+    <link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <h1>🏥 Clinic CRM</h1>
-            <p class="subtitle">Digital Patient Register for Personal Clinics</p>
-            
-            <!-- Login Form -->
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" required placeholder="doctor@example.com">
-                </div>
-                
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" required placeholder="Enter password">
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Login</button>
-                <p id="errorMsg" class="error-msg"></p>
-            </form>
-            
-            <!-- Register Toggle -->
-            <p class="toggle-text">
-                Don't have an account? 
-                <a href="#" id="showRegister">Register here</a>
-            </p>
-        </div>
-        
-        <!-- Registration Form (Hidden by default) -->
-        <div class="login-box" id="registerBox" style="display: none;">
-            <h1>📝 Register</h1>
-            
-            <form id="registerForm">
-                <div class="form-group">
-                    <label>Doctor Name</label>
-                    <input type="text" id="regName" required placeholder="Dr. Sharma">
-                </div>
-                
-                <div class="form-group">
-                    <label>Clinic Name</label>
-                    <input type="text" id="regClinic" required placeholder="Sharma Clinic">
-                </div>
-                
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="regEmail" required placeholder="doctor@example.com">
-                </div>
-                
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="regPassword" required placeholder="Minimum 6 characters">
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Register</button>
-                <p id="regErrorMsg" class="error-msg"></p>
-            </form>
-            
-            <p class="toggle-text">
-                Already have an account? 
-                <a href="#" id="showLogin">Login here</a>
-            </p>
-        </div>
-    </div>
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Our Scripts -->
-    <script src="js/firebase-config.js"></script>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🏥</span>
+                <span class="logo-text">Clinic CRM</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="login.html" class="btn-nav-login">Login</a>
+                <a href="login.html" class="btn-nav-signup">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Modern Patient Management<br>
+                    for <span class="gradient-text">Personal Clinics</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Say goodbye to paper registers. Manage patient records, track visits, 
+                    and get AI-powered insights - all in one simple, secure platform.
+                </p>
+                <div class="hero-buttons">
+                    <a href="login.html" class="btn-primary-large">
+                        Start Free Trial
+                        <span class="btn-arrow">→</span>
+                    </a>
+                    <a href="#features" class="btn-secondary-large">
+                        See Features
+                    </a>
+                </div>
+                <p class="hero-caption">
+                    ✨ No credit card required • 🔒 100% Secure • 🇮🇳 Made for Indian Clinics
+                </p>
+            </div>
+            <div class="hero-image">
+                <div class="dashboard-mockup">
+                    <div class="mockup-header">
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-card">
+                            <div class="card-icon">👥</div>
+                            <div class="card-text">
+                                <div class="card-number">156</div>
+                                <div class="card-label">Total Patients</div>
+                            </div>
+                        </div>
+                        <div class="mockup-card">
+                            <div class="card-icon">📋</div>
+                            <div class="card-text">
+                                <div class="card-number">12</div>
+                                <div class="card-label">Visits Today</div>
+                            </div>
+                        </div>
+                        <div class="mockup-list">
+                            <div class="list-item">
+                                <div class="list-avatar">R</div>
+                                <div class="list-info">
+                                    <div class="list-name">Rajesh Kumar</div>
+                                    <div class="list-details">45 years • Male</div>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-avatar">P</div>
+                                <div class="list-info">
+                                    <div class="list-name">Priya Sharma</div>
+                                    <div class="list-details">32 years • Female</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Everything You Need to Run Your Clinic</h2>
+                <p class="section-subtitle">Powerful features designed specifically for personal clinics in India</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Digital Patient Records</h3>
+                    <p>Replace paper registers with secure digital records. Access patient history instantly.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💊</div>
+                    <h3>Medicine Tracking</h3>
+                    <p>Track prescribed medicines with dosage and duration. Auto-suggest frequently used medications.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-Powered Insights</h3>
+                    <p>Get smart summaries of patient history. Identify patterns and recurring conditions automatically.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <h3>Follow-Up Reminders</h3>
+                    <p>Never miss a follow-up. Automatic reminders for patients needing check-ups.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Smart Analytics</h3>
+                    <p>Track visits, identify busy days, analyze patient demographics and common diagnoses.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🖨️</div>
+                    <h3>Print & Export</h3>
+                    <p>Print professional prescriptions and export complete patient reports as PDF.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Simple. Fast. Effective.</h2>
+                <p class="section-subtitle">Get started in minutes, not hours</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Sign Up</h3>
+                    <p>Create your account in 30 seconds. No setup required.</p>
+                </div>
+
+                <div class="step-arrow">→</div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Add Patients</h3>
+                    <p>Register patients with basic info. Store medical history securely.</p>
+                </div>
+
+                <div class="step-arrow">→</div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Record Visits</h3>
+                    <p>Document symptoms, diagnosis, and medicines in seconds.</p>
+                </div>
+
+                <div class="step-arrow">→</div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Smart Insights</h3>
+                    <p>Get AI summaries, analytics, and follow-up reminders automatically.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits">
+        <div class="section-container">
+            <div class="benefits-content">
+                <div class="benefits-text">
+                    <h2 class="section-title">Why Doctors Love Clinic CRM</h2>
+                    <div class="benefit-list">
+                        <div class="benefit-item">
+                            <span class="benefit-check">✓</span>
+                            <div class="benefit-content">
+                                <h4>Save Time</h4>
+                                <p>Record visits 5x faster than paper registers. Access any patient record in seconds.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-check">✓</span>
+                            <div class="benefit-content">
+                                <h4>Never Lose Data</h4>
+                                <p>Cloud backup ensures your records are safe. No more lost or damaged registers.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-check">✓</span>
+                            <div class="benefit-content">
+                                <h4>Better Patient Care</h4>
+                                <p>Complete history at your fingertips. Make informed decisions with past data.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-check">✓</span>
+                            <div class="benefit-content">
+                                <h4>Professional Reports</h4>
+                                <p>Generate PDF reports for insurance, referrals, and legal requirements.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="benefits-stats">
+                    <div class="stat-box">
+                        <div class="stat-number">10 min</div>
+                        <div class="stat-label">Average Setup Time</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">5x</div>
+                        <div class="stat-label">Faster Than Paper</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Data Security</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Access Anywhere</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Modernize Your Clinic?</h2>
+            <p class="cta-subtitle">Join hundreds of doctors who've made the switch from paper to digital</p>
+            <div class="cta-buttons">
+                <a href="login.html" class="btn-cta-primary">
+                    Get Started Free
+                </a>
+                <a href="login.html" class="btn-cta-secondary">
+                    Login to Your Account
+                </a>
+            </div>
+            <p class="cta-note">No credit card required • Free forever for personal clinics</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <span class="logo-icon">🏥</span>
+                <span class="logo-text">Clinic CRM</span>
+            </div>
+            <p class="footer-text">
+                Modern patient management for personal clinics in India
+            </p>
+            <p class="footer-copyright">
+                © 2025 Clinic CRM. Built with ❤️ for Indian Doctors.
+            </p>
+        </div>
+    </footer>
+
     <script src="js/dark-mode.js"></script>
-    <script src="js/auth.js"></script>
+    <script src="js/toast.js"></script>
 </body>
 </html>

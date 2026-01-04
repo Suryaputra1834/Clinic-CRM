@@ -191,14 +191,14 @@ async function deletePatient(patientId, patientName, event) {
         console.log('Patient deleted successfully');
         
         // Show success message
-        alert(`✅ Patient "${patientName}" has been permanently deleted.`);
+        showSuccess(`✅ Patient "${patientName}" has been permanently deleted.`);
         
         // Reload the patient list
         await loadAllPatients(user.uid);
         
     } catch (error) {
         console.error('Error deleting patient:', error);
-        alert('❌ Error deleting patient: ' + error.message);
+        showError('❌ Error deleting patient: ' + error.message);
         
         // Restore button
         if (deleteBtn) {
@@ -239,9 +239,9 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     if (confirm('Are you sure you want to logout?')) {
         try {
             await auth.signOut();
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         } catch (error) {
-            alert('Error logging out: ' + error.message);
+            showError('Error logging out: ' + error.message);
         }
     }
 });

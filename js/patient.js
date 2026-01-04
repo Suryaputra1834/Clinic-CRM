@@ -83,9 +83,9 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     if (confirm('Are you sure you want to logout?')) {
         try {
             await auth.signOut();
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         } catch (error) {
-            alert('Error logging out: ' + error.message);
+            showError('Error logging out: ' + error.message);
         }
     }
 });
