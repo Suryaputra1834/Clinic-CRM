@@ -2988,3 +2988,47 @@ body {
         max-width: none;
     }
 }
+
+/* ==================== WHATSAPP BUTTON ==================== */
+
+.btn-whatsapp-small {
+    background: var(--white);
+    border: 2px solid #25D366;
+    color: #25D366;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.btn-whatsapp-small:hover {
+    background: #25D366;
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+/* Adjust visit actions for 4 buttons */
+.visit-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .visit-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .btn-whatsapp-small,
+    .btn-edit-small,
+    .btn-print-small,
+    .btn-delete-small {
+        flex: 1;
+        min-width: 60px;
+    }
+}
